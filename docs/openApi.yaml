@@ -1,0 +1,344 @@
+openapi: 3.0.0
+info:
+  title: Sample Payment API
+  description: 簡易な支払い管理APIです
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000
+    description: local server
+tags:
+  - name: users
+    description: ユーザに関するAPI
+  - name: accounts
+    description: ユーザが所有する口座に関するAPI
+paths:
+  /users/signup:
+    post:
+      tags:
+        - users
+      summary: ユーザ登録
+      description: ユーザの新規登録を行う
+      parameters: []
+      requestBody:
+        description: user to create
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserSignupRequest'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+  /users/auth:
+    post:
+      tags:
+        - users
+      summary: ユーザ認証
+      description: ユーザの認証を行う
+      parameters: []
+      requestBody:
+        description: user to create
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserAuthRequest'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserAuthResponse'
+  /users/:userId/accounts:
+    get:
+      tags:
+        - accounts
+      summary: ユーザの所有する口座一覧
+      description: ユーザの所有する口座一覧を取得する
+      security:
+        - TokenAuth: []
+      parameters:
+        - name: userId
+          in: path
+          description: user id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AccountResponse'
+  /users/:userId/accounts/:accountId/payments:
+    post:
+      tags:
+        - accounts
+      summary: ユーザの所有する口座から支払い
+      description: ユーザが所有する口座から指定口座に支払いを行う
+      security:
+        - TokenAuth: []
+      parameters:
+        - name: userId
+          in: path
+          description: user id
+          required: true
+          schema:
+            type: string
+        - name: accountId
+          in: path
+          description: account id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: user to create
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AccountResponse'
+  /users/:userId/accounts/:accountId/deposits:
+    post:
+      tags:
+        - accounts
+      summary: ユーザの所有する口座への預け入れ
+      description: ユーザが所有する口座へ指定金額の預け入れを行う
+      security:
+        - TokenAuth: []
+      parameters:
+        - name: userId
+          in: path
+          description: user id
+          required: true
+          schema:
+            type: string
+        - name: accountId
+          in: path
+          description: account id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: user to create
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DepositRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AccountResponse'
+  /users/:userId/accounts/:accountId/withdrawals:
+    post:
+      tags:
+        - accounts
+      summary: ユーザの所有する口座から引き出し
+      description: ユーザが所有する口座から指定金額の引き出しを行う
+      security:
+        - TokenAuth: []
+      parameters:
+        - name: userId
+          in: path
+          description: user id
+          required: true
+          schema:
+            type: string
+        - name: accountId
+          in: path
+          description: account id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: user to create
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WithdrawRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AccountResponse'
+  /users/:userId/accounts/:accountId/activities:
+    get:
+      tags:
+        - accounts
+      summary: ユーザの所有する口座の入出金履歴一覧
+      description: ユーザの所有する口座一覧の入出金履歴を過去100件分取得する
+      security:
+        - TokenAuth: []
+      parameters:
+        - name: userId
+          in: path
+          description: user id
+          required: true
+          schema:
+            type: string
+        - name: accountId
+          in: path
+          description: account id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AccountActivityResponse'
+components:
+  securitySchemes:
+    TokenAuth:
+      type: apiKey
+      in: header
+      name: x-api-token
+  schemas:
+    UserSignupRequest:
+      type: object
+      required:
+        - name
+        - email
+        - password
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+    UserAuthRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+    PaymentRequest:
+      type: object
+      required:
+        - targetUserId
+        - targetAccountId
+        - amount
+      properties:
+        targetUserId:
+          type: string
+        targetAccountId:
+          type: string
+        amount:
+          type: integer
+    DepositRequest:
+      type: object
+      required:
+        - amount
+      properties:
+        amount:
+          type: integer
+    WithdrawRequest:
+      type: object
+      required:
+        - amount
+      properties:
+        amount:
+          type: integer
+    UserAuthResponse:
+      type: object
+      required:
+        - token
+      properties:
+        token:
+          type: string
+    UserResponse:
+      type: object
+      required:
+        - id
+        - name
+        - email
+        - encryptedPassword
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        encryptedPassword:
+          type: string
+    AccountResponse:
+      type: object
+      required:
+        - id
+        - userId
+        - balance
+        - depositLimit
+        - withdrawLimit
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        balance:
+          type: integer
+        depositLimit:
+          type: integer
+        withdrawLimit:
+          type: integer
+    AccountActivityResponse:
+      type: object
+      required:
+        - id
+        - executorId
+        - executorAccountId
+        - targetUserId
+        - targetAccountId
+        - amount
+        - activityType
+        - activityDateEpochMills
+      properties:
+        id:
+          type: string
+        executorId:
+          type: string
+        executorAccountId:
+          type: string
+        targetUserId:
+          type: string
+        targetAccountId:
+          type: string
+        amount:
+          type: integer
+        activityType:
+          type: string
+          enum: ['Payment', 'Receive', 'Deposit', 'Withdraw']
+        activityDateEpochMills:
+          type: integer
